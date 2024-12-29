@@ -17,7 +17,7 @@ export default function Header() {
     }
     const fetchUserData = async()=>{
         const response = await axios.get(
-            'http://localhost:5000/api/user/logged-user',
+            `${process.env.NEXT_PUBLIC_API_URL}/api/user/logged-user`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`, // Add token to the Authorization header

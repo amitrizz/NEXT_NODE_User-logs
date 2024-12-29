@@ -21,7 +21,7 @@ export default function ProfilePage() {
             setIsloading(true);
             const token = Cookies.get("token");
             const res = await axios.get(
-                "http://localhost:5000/api/user/logged-user",
+                `${process.env.NEXT_PUBLIC_API_URL}/api/user/logged-user`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`, // Add token to the Authorization header
@@ -61,7 +61,7 @@ export default function ProfilePage() {
                                 const interval = setInterval(() => {
                                     const token = Cookies.get("token");
                                     axios.put(
-                                        'http://localhost:5000/api/gps/save-gps/', 
+                                        `${process.env.NEXT_PUBLIC_API_URL}/api/gps/save-gps/`, 
                                         { latitude:latitude, longitude:longitude }, // Payload (body)
                                         {
                                             headers: {

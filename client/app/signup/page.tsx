@@ -21,7 +21,7 @@ export default function SignupPage() {
     const onSignup = async () => {
         try {
             setIsloading(true);
-            const res = await axios.post("http://localhost:5000/api/user/register", user);
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/user/register`, user);
             Cookies.set('token', res.data.token, { expires: 1, path: '/' }); // Expires in 1 da
             router.push("/profile");
 

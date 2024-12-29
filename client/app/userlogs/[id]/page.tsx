@@ -35,7 +35,7 @@ export default function userLogs({ params }: { params: Promise<{ id: string }> }
             setLoading(true);
             const token = Cookies.get("token");
             const res = await axios.get(
-                `http://localhost:5000/api/gps/get-user-logs/${id}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/api/gps/get-user-logs/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`, // Add token to the Authorization header

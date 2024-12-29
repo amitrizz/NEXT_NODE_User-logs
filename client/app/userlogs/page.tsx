@@ -33,7 +33,7 @@ export default function AdminPage() {
             setLoading(true);
             const token = Cookies.get("token");
             const res = await axios.get(
-                "http://localhost:5000/api/gps/get-all-gps",
+                `${process.env.NEXT_PUBLIC_API_URL}/api/gps/get-all-gps`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`, // Add token to the Authorization header
