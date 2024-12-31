@@ -1,5 +1,6 @@
 import GpsModel from "../models/UserCurrentGpsTable.js";
 import GpsModelLogs from "../models/UserGPSLogs.js";
+import { producer,connectProducer } from "../services/kafka.js";
 
 class GPSController {
 
@@ -29,12 +30,12 @@ class GPSController {
             return res.status(401).send({ status: "failed", message: "Unauthorized User Only Admin Can Access This Page" });
          }
 
-         const gps = await GpsModelLogs.findOne({ userId:userId }).populate({
+         const gps = await GpsModelLogs.findOne({ userId: userId }).populate({
             path: 'userId',
             select: '-password -isAdmin', // Exclude both 'password' and 'isAdmin' fields
-          });
+         });
          //  console.log(gps);
-          
+
 
          if (!gps || gps.length === 0) {
             return res.status(404).send({ status: "failed", message: "No logs found for this user" });
@@ -51,38 +52,32 @@ class GPSController {
       try {
          const { latitude, longitude } = req.body;
          const user = req.user;
-         console.log(user, latitude, longitude);
+
          if (!latitude || !longitude) {
-            res.status(400).send({ status: "failed", message: "All filed are required" });
+            return res.status(400).send({ status: "failed", message: "All fields are required" });
          }
 
-         // Store User Each Logs in GPSModelLogs
-         const updatedUser = await GpsModelLogs.findOneAndUpdate(
-            { userId: user._id }, // Find the document by userId
-            {
-               $push: { location: { lat: latitude, lng: longitude } }, // Append the new lat/lng to the location array
-               updatedAt: new Date(), // Update the updatedAt field
-            },
-            { upsert: true, new: true } // Create the document if it doesn't exist, and return the updated document
-         );
+         // Kafka message to produce
+         const message = {
+            userId: user._id,
+            latitude,
+            longitude,
+            timestamp: new Date()
+         };
 
-         //update or create user current logs
-         const result = await GpsModel.findOneAndUpdate(
-            { userId: user._id },
-            { latitude, longitude, updatedAt: new Date() }, // Update these fields
-            { upsert: true, new: true } // Create new document if not found
-         )
+         // Send GPS data to Kafka topic
+         await producer.send({
+            topic: 'user-gps-logs',
+            messages: [{ value: JSON.stringify(message) }]
+         });
 
-         // console.log(result);
+         console.log('Produced GPS log to Kafka:', message);
 
-         if (result) {
-            // const long=location['longitude'] 
-            res.status(200).send({ status: "Update success", data: result });
-         }
-
+         // Respond to the client
+         res.status(200).send({ status: "success", message: "GPS log sent to Kafka" });
       } catch (error) {
          console.error(error);
-         res.status(500).send({ status: "failed", message: "Unable to update Employee" });
+         res.status(500).send({ status: "failed", message: "Unable to process GPS log" });
       }
    };
 
